@@ -14,7 +14,7 @@ const createPost = async (req, res) => {
 
   try {
     const savedPost = await newPost.save();
-    res.status(201).json(savedPost);
+    res.status(200).json({ message: "Post created successfully", savedPost });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -26,10 +26,13 @@ const getAllPosts = async (req, res) => {
       .limit(20) // Limit to 20 posts
       .populate("author", "username name email") // Populate author details
       .populate({
-        path: "comments.author", // Populate author details for comments
-        select: "username name email", // Only select the required fields
+        path: "comments", // Populate comments
+        populate: {
+          path: "author", // Populate author details for comments
+          select: "username name email",
+        },
+        options: { sort: { timestamp: -1 } }, // Sort comments by timestamp in descending order
       });
-
     res.status(200).json(posts);
   } catch (err) {
     res.status(500).json({ message: err.message });
