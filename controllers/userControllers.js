@@ -236,6 +236,23 @@ const reset_password = async (req, res) => {
   }
 };
 
+//Get a user by id
+const getUserById = (req, res) => {
+  const userId = req.params.userId;
+
+  User.findOne({ _id: userId })
+    .select("-password")
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ error: "User was not found" });
+      }
+      res.json(user);
+    })
+    .catch((error) => {
+      res.status(404).json({ error: "User was not found" });
+    });
+};
+
 module.exports = {
   createUser,
   signin,
@@ -244,4 +261,5 @@ module.exports = {
   getUserByUsername,
   forgot_password,
   reset_password,
+  getUserById,
 };
