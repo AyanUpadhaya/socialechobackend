@@ -19,13 +19,17 @@ const createPost = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
-//get all posts
 const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
       .limit(20) // Limit to 20 posts
-      .populate("author"); // Populate author
+      .populate('author', 'username name email') // Populate author details
+      .populate({
+        path: 'comments.author', // Populate author details for comments
+        select: 'username name email' // Only select the required fields
+      });
+
     res.status(200).json(posts);
   } catch (err) {
     res.status(500).json({ message: err.message });
