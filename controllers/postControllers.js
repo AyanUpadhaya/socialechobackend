@@ -24,10 +24,10 @@ const getAllPosts = async (req, res) => {
     const posts = await Post.find()
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
       .limit(20) // Limit to 20 posts
-      .populate('author', 'username name email') // Populate author details
+      .populate("author", "username name email") // Populate author details
       .populate({
-        path: 'comments.author', // Populate author details for comments
-        select: 'username name email' // Only select the required fields
+        path: "comments.author", // Populate author details for comments
+        select: "username name email", // Only select the required fields
       });
 
     res.status(200).json(posts);
@@ -148,7 +148,6 @@ const addComment = async (req, res) => {
 //delete comment
 const deleteComment = async (req, res) => {
   const { postId, commentId } = req.params;
-  const userId = req.user.id;
 
   try {
     const post = await Post.findById(postId);
@@ -157,23 +156,21 @@ const deleteComment = async (req, res) => {
       return res.status(404).json({ error: "Post not found" });
     }
 
-    const comment = post.comments.id(commentId);
+    const commentIndex = post.comments.findIndex(
+      (c) => c._id.toString() === commentId
+    );
 
-    if (!comment) {
+    if (commentIndex === -1) {
       return res.status(404).json({ error: "Comment not found" });
     }
 
-    if (comment.author.toString() !== userId) {
-      return res
-        .status(403)
-        .json({ error: "You are not authorized to delete this comment" });
-    }
+    // Remove the comment
+    post.comments.splice(commentIndex, 1);
 
-    comment.remove();
     await post.save();
     res.status(200).json({ message: "Comment deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: "Error deleting comment" });
+    res.status(500).json({ error: "Error deleting comment: " + error.message });
   }
 };
 
